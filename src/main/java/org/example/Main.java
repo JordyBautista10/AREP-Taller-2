@@ -1,5 +1,8 @@
 package org.example;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -8,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.io.ByteArrayOutputStream;
 
 /**
  * @author Jordy Bautista
@@ -170,19 +174,36 @@ public class Main {
 
         File fileSrc = new File(requestedUri.getPath());
         String fileType = Files.probeContentType(fileSrc.toPath());
+        System.out.println("filetype----------------------------" + fileType);
 
         Path file = Paths.get("target/classes/public" + requestedUri.getPath());
         String outputLine =  "HTTP/1.1 200 OK\r\n"
                 + "Content-Type:" + fileType + "\r\n"
                 + "\r\n"; // Necesario para los nuevos navegadores
 
-        Charset charset = StandardCharsets.UTF_8;
-        BufferedReader reader = Files.newBufferedReader(file, charset);
-        String line = null;
-        while ((line = reader.readLine()) != null){
-            System.out.print(line);
-            outputLine = outputLine + line;
+        if (fileType.startsWith("image")) {
+            BufferedImage image = ImageIO.read(file.toFile());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "jpeg",baos);
+            byte[] imageBytes = baos.toByteArray();
+            String imageData = new String(imageBytes, "UTF-8");
+            InputStreamReader inputStream = new InputStreamReader(new ByteArrayInputStream(imageData.getBytes("UTF-8")));
+            BufferedReader reader = new BufferedReader(inputStream);
+            String line = null;
+            while ((line =  reader.readLine()) != null){
+                System.out.print(line);
+                outputLine = outputLine + line;
+            }
+        } else {
+            Charset charset = StandardCharsets.UTF_8;
+            BufferedReader reader = Files.newBufferedReader(file, charset);
+            String line = null;
+            while ((line = reader.readLine()) != null){
+                System.out.print(line);
+                outputLine = outputLine + line;
+            }
         }
+
 
         return outputLine;
     }
