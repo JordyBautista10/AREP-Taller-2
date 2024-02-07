@@ -2,6 +2,11 @@ package org.example;
 
 import java.net.*;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -16,7 +21,7 @@ public class Main {
      * @param args por defecto
      * @throws IOException Esta clase es la clase general de excepciones producidas por operaciones de E/S fallidas o interrumpidas.
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
         ServerSocket serverSocket = null;
 
         try {
@@ -55,14 +60,19 @@ public class Main {
                     break;
                 }
             }
-            if(uriStr.startsWith("/Cliente")){
-                outputLine = httpClientHtml();
-            }else if (uriStr.startsWith("/Busqueda") && uriStr.length() > 12){  // Se asegura de que la uri no tenga busqueda vacia
+
+            if (uriStr.startsWith("/Busqueda") && uriStr.length() > 12){  // Se asegura de que la uri no tenga busqueda vacia
                 outputLine = cacheSearch(uriStr);
+            } else {
+                try {
+                    outputLine = httpClientHtml(new URI(uriStr));
+                } catch (Exception e) {
+                    outputLine = httpError();
+                }
+
+
             }
-            else {
-                outputLine = httpError();
-            }
+
             out.println(outputLine);
             out.close();
             in.close();
@@ -109,7 +119,10 @@ public class Main {
         int responseCode = con.getResponseCode();
         StringBuffer response = new StringBuffer();
         // Encabezado necesario en todas las peticiones
-        response.append("HTTP/1.1 200 OK\r\n" + "Content-Type:application/json\r\n" + "\r\n");
+        response.append("HTTP/1.1 200 OK\r\n"
+                + "Content-Type:application/json\r\n"
+                + "Access-Control-Allow-Origin: *\r\n"
+                + "\r\n");
         System.out.println("GET Response Code :: " + responseCode);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { // success
@@ -153,106 +166,25 @@ public class Main {
      * Este metodo retorna una pagina de HTML con la cual se pueden realizar busquedas de peliculas y la informacion
      * @return String de una pagina web de busqueda
      */
-    public static String httpClientHtml() {
-        return "HTTP/1.1 200 OK\r\n" //encabezado necesario
-                + "Content-Type:text/html\r\n"
-                + "\r\n" //retorno de carro y salto de linea
-                + "<!DOCTYPE html>"
-                + "<html>\n"
-                + "    <head>\n"
-                + "        <title>MoviesSearch</title>\n"
-                + "        <meta charset=\"UTF-8\">\n"
-                + "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-                + "     <style>\n" +
-                "        h1 {\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        form {\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        input[type=\"text\"] {\n" +
-                "            display: inline-block;\n" +
-                "            width: 300px;\n" +
-                "            margin: 10px auto;\n" +
-                "        }\n" +
-                "        input[type=\"button\"] {\n" +
-                "            display: inline-block;\n" +
-                "            margin: 10px auto;\n" +
-                "        }\n" +
-                "    </style>"
-                + "    </head>\n"
-                + "    <body>\n"
-                + "        <h1>Busca información de tu película favorita</h1>\n"
-                + "        <form action=\"/Busqueda\">\n"
-                + "            <label for=\"name\">Name:</label><br>\n"
-                + "            <input type=\"text\" id=\"name\" name=\"t\" value=\"John\"><br><br>\n"
-                + "            <input type=\"button\" value=\"Submit\" onclick=\"loadGetMsg()\">\n"
-                + "        </form> \n"
-                + "        <div id=\"getrespmsg\"></div>\n"
-                + "\n"
-                + "        <script>\n"
-                + "            function loadGetMsg() {\n"
-                + "                let nameVar = document.getElementById(\"name\").value;\n"
-                + "                const xhttp = new XMLHttpRequest();\n"
-                + "                xhttp.onload = function() {\n"
-                + "                    var jsonResponse = JSON.parse(this.responseText);"
-                + "                if (jsonResponse.Response === \"False\") {\n"
-                + "                    document.getElementById(\"getrespmsg\").innerHTML = \"No information found for the movie.\";\n"
-                + "                } else {"
-                + "                    var htmlContent = \"<b>Title: </b>\" + jsonResponse.Title + \"<br>\";"
-                + "                    htmlContent += \"<b> Year: </b>\" + jsonResponse.Year + \"<br>\";"
-                + "                    htmlContent += \"<b> RatedRated: </b>\" + jsonResponse.Rated + \"<br>\";"
-                + "                    htmlContent += \"<b> Released: </b>\" + jsonResponse.Released + \"<br>\";"
-                + "                    htmlContent += \"<b> Runtime: </b>\" + jsonResponse.Runtime + \"<br>\";"
-                + "                    htmlContent += \"<b> Genre: </b>\" + jsonResponse.Genre + \"<br>\";"
-                + "                    htmlContent += \"<b> Director: </b>\" + jsonResponse.Director + \"<br>\";"
-                + "                    htmlContent += \"<b> Writer: </b>\" + jsonResponse.Writer + \"<br>\";"
-                + "                    htmlContent += \"<b> Actors: </b>\" + jsonResponse.Actors + \"<br>\";"
-                + "                    htmlContent += \"<b> Plot: </b>\" + jsonResponse.Plot + \"<br>\";"
-                + "                    htmlContent += \"<b> Language: </b>\" + jsonResponse.Language + \"<br>\";"
-                + "                    htmlContent += \"<b> Country: </b>\" + jsonResponse.Country + \"<br>\";"
-                + "                    htmlContent += \"<b> Awards: </b>\" + jsonResponse.Awards + \"<br>\";"
-                // Lista
-                + "                    htmlContent += '<b> Ratings: </b>' + formatRanking(jsonResponse.Ratings) + '<br>';"
-                + "                    htmlContent += \"<b> Metascore: </b>\" + jsonResponse.Metascore + \"<br>\";"
-                + "                    htmlContent += \"<b> imdbRating: </b>\" + jsonResponse.imdbRating + \"<br>\";"
-                + "                    htmlContent += \"<b> imdbVotes: </b>\" + jsonResponse.imdbVotes + \"<br>\";"
-                + "                    htmlContent += \"<b> imdbID: </b>\" + jsonResponse.imdbID + \"<br>\";"
-                + "                    htmlContent += \"<b> imdbVotes: </b>\" + jsonResponse.imdbVotes + \"<br>\";"
-                + "                    htmlContent += \"<b> Type: </b>\" + jsonResponse.Type + \"<br>\";"
-                + "                    htmlContent += \"<b> DVD: </b>\" + jsonResponse.DVD + \"<br>\";"
-                + "                    htmlContent += \"<b> BoxOffice: </b>\" + jsonResponse.BoxOffice + \"<br>\";"
-                + "                    htmlContent += \"<b> Production: </b>\" + jsonResponse.Production + \"<br>\";"
-                + "                    htmlContent += \"<b> Website: </b>\" + jsonResponse.Website + \"<br>\";"
-                + "                    htmlContent += \"<b> Response: </b>\" + jsonResponse.Response + \"<br>\";"
-                // Cartel de la pelicula
-                + "                    htmlContent += \"<b> Poster: </b>\" + \"<img src=\" + jsonResponse.Poster + \"> <br>\";"
-                + "                    htmlContent += \"<b> Info: </b>\"  +  JSON.stringify(jsonResponse) + \"<br>\";"
+    public static String httpClientHtml(URI requestedUri) throws IOException {
 
-                + "                    document.getElementById(\"getrespmsg\").innerHTML = htmlContent \n"
-                + "                  }\n"
-                + "                }\n"
-                + "                xhttp.open(\"GET\", \"/Busqueda?t=\"+nameVar);\n"
-                + "                xhttp.send();\n"
-                + "            }\n"
-                + "     function formatRanking(ranking) {\n" +
-                "        let html = '<table border=\"1\">';\n" +
-                "        html += '<tr><th>Source</th><th>Value</th></tr>';\n" +
-                "\n" +
-                "        for (let i = 0; i < ranking.length; i++) {\n" +
-                "            html += '<tr>';\n" +
-                "            html += '<td>' + ranking[i].Source + '</td>';\n" +
-                "            html += '<td>' + ranking[i].Value + '</td>';\n" +
-                "            html += '</tr>';\n" +
-                "        }\n" +
-                "\n" +
-                "        html += '</table>';\n" +
-                "        return html;\n" +
-                "    }"
-                + "        </script>\n"
-                + "\n"
-                + "    </body>\n"
-                + "</html>";
+        File fileSrc = new File(requestedUri.getPath());
+        String fileType = Files.probeContentType(fileSrc.toPath());
+
+        Path file = Paths.get("target/classes/public" + requestedUri.getPath());
+        String outputLine =  "HTTP/1.1 200 OK\r\n"
+                + "Content-Type:" + fileType + "\r\n"
+                + "\r\n"; // Necesario para los nuevos navegadores
+
+        Charset charset = StandardCharsets.UTF_8;
+        BufferedReader reader = Files.newBufferedReader(file, charset);
+        String line = null;
+        while ((line = reader.readLine()) != null){
+            System.out.print(line);
+            outputLine = outputLine + line;
+        }
+
+        return outputLine;
     }
 
 }
