@@ -1,6 +1,6 @@
-# TALLER 1: APLICACIONES DISTRIBUIDAS (HTTP, SOCKETS, HTML, JS,MAVEN, GIT)
+# TALLER 2: DISEÑO Y ESTRUCTURACIÓN DE APLICACIONES DISTRIBUIDAS EN INTERNET
 
-Este proyecto de Java se desarrolló con la intención de abordar las conexiones HTTP (tanto cliente como servidor). Con esto en mente, el código de este proyecto permite usar un cliente JavaScript que puede buscar información acerca de distintas películas, si bien, esto es lo que el cliente experimenta (Una búsqueda sencilla de información relacionada con un filme), realmente lo que se está haciendo es una serie de peticiones tipo HTTP a un servidor fachada creado por este mismo código, una vez recibida la petición el servidor busca en su cache para verificar si ya tiene registro de esa película, en caso de tenerla retorna lo que tiene almacenado, si no tiene registro, realiza la consulta a un API público.
+Este proyecto de Java se desarrolló con la intención de abordar las conexiones HTTP (tanto cliente como servidor). Con esto en mente, el código de este proyecto permite usar un cliente JavaScript que puede buscar información acerca de distintas películas, si bien, esto es lo que el cliente experimenta (Una búsqueda sencilla de información relacionada con un filme), realmente lo que se está haciendo es una serie de peticiones tipo HTTP a un servidor fachada creado por este mismo código, una vez recibida la petición el servidor busca en su cache para verificar si ya tiene registro de esa película, en caso de tenerla retorna lo que tiene almacenado, si no tiene registro, realiza la consulta a un API público. La novedad en esta entrega es, que el servidor tiene la capacidad de leer archivos en disco, soporta archivos HTML, CSS, JS e imágenes JPG.
 
 ## Para Comenzar
 
@@ -9,7 +9,7 @@ Este proyecto de Java se desarrolló con la intención de abordar las conexiones
 En primera instancia, debemos obtener el código del proyecto, por lo que se ejecutara el comando desde consola. (tenga en cuenta que debe estar en la carpeta deseada antes de clonar el repositorio)
 
 ~~~
-git clone https://github.com/JordyBautista10/AREP-Taller-1.git
+https://github.com/JordyBautista10/AREP-Taller-2.git
 ~~~
 
 Posteriormente, descargamos las dependencias necesarias y compilamos el código
@@ -22,14 +22,14 @@ mvn clean install compile
 
 Para correr este codigo usando un ID, hay que ingresar a la carpeta que se muestra acontinuacion y ejecutar el archivo llamado Main.java
 
-![image](https://github.com/JordyBautista10/AREP-Taller-1/assets/123812969/46b32c90-623f-4d5a-8307-b79fa32eced8)
+![image](https://github.com/JordyBautista10/AREP-Taller-2/assets/123812969/01072a26-8b49-465d-aa09-da12f2be0e83)
 
 #### Funcionamiento
 
 Una vez el código esté corriendo debemos poner la siguiente dirección URL en el navegador
 
 ~~~
-http://localhost:35000/Cliente
+http://localhost:35000/index.html
 ~~~
 
 Hecho esto, Deberia aparecer una pagian de este estilo
@@ -43,6 +43,13 @@ Hecho esto, Deberia aparecer una pagian de este estilo
 Este deberia ser el resultado
 
 ![image](https://github.com/JordyBautista10/AREP-Taller-1/assets/123812969/cfd735ef-8d29-4c4d-8208-ae8f45122abf)
+
+Si lo que desea es ver una imagen dentro del servidor, agregué una imagen en la carpeta /resources/public y búsquela por su nombre, en el siguiente ejemplo se añadió la imagen Nitro.jpg, por lo que se busca de la siguiente manera:
+
+~~~
+http://localhost:35000/Nitro.jpg
+~~~
+
 
 ### Prerequisitos
 
