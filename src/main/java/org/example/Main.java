@@ -69,15 +69,19 @@ public class Main {
                 outputLine = cacheSearch(uriStr);
             } else {
                 try {
-                    outputLine = httpClientHtml(new URI(uriStr));
+                    outputLine = httpClientHtml(new URI(uriStr), clientSocket.getOutputStream());
                 } catch (Exception e) {
                     outputLine = httpError();
                 }
-
-
             }
 
-            out.println(outputLine);
+            try (OutputStream os = clientSocket.getOutputStream()) {
+                os.write(outputLine.getBytes());
+            } catch (IOException e) {
+                System.out.println("Error sending response body");
+            }
+
+            //out.println(outputLine);
             out.close();
             in.close();
             clientSocket.close();
@@ -170,7 +174,7 @@ public class Main {
      * Este metodo retorna una pagina de HTML con la cual se pueden realizar busquedas de peliculas y la informacion
      * @return String de una pagina web de busqueda
      */
-    public static String httpClientHtml(URI requestedUri) throws IOException {
+    public static String httpClientHtml(URI requestedUri, OutputStream outStm) throws IOException {
 
         File fileSrc = new File(requestedUri.getPath());
         String fileType = Files.probeContentType(fileSrc.toPath());
@@ -184,16 +188,10 @@ public class Main {
         if (fileType.startsWith("image")) {
             BufferedImage image = ImageIO.read(file.toFile());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "jpeg",baos);
+            ImageIO.write(image, fileType.split("/")[1],baos);
             byte[] imageBytes = baos.toByteArray();
-            String imageData = new String(imageBytes, "UTF-8");
-            InputStreamReader inputStream = new InputStreamReader(new ByteArrayInputStream(imageData.getBytes("UTF-8")));
-            BufferedReader reader = new BufferedReader(inputStream);
-            String line = null;
-            while ((line =  reader.readLine()) != null){
-                System.out.print(line);
-                outputLine = outputLine + line;
-            }
+            outStm.write(outputLine.getBytes());
+            outStm.write(imageBytes);
         } else {
             Charset charset = StandardCharsets.UTF_8;
             BufferedReader reader = Files.newBufferedReader(file, charset);
@@ -203,7 +201,6 @@ public class Main {
                 outputLine = outputLine + line;
             }
         }
-
 
         return outputLine;
     }
