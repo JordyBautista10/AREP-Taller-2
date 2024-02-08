@@ -47,9 +47,12 @@ Este deberia ser el resultado
 Si lo que desea es ver una imagen dentro del servidor, agregué una imagen en la carpeta /resources/public y búsquela por su nombre, en el siguiente ejemplo se añadió la imagen Nitro.jpg, por lo que se busca de la siguiente manera:
 
 ~~~
-http://localhost:35000/Nitro.jpg
+http://localhost:35000/nitro.jpg
 ~~~
 
+Deberia verse de la siguiente forma:
+
+![image](https://github.com/JordyBautista10/AREP-Taller-2/assets/123812969/d0a6adf7-0d77-42ab-9899-475bb8e50e9d)
 
 ### Prerequisitos
 
